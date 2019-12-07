@@ -16,8 +16,20 @@ export const getCriteria = () => {
     try {
       const res = await instance.get("/criterion/");
       const criteria = res.data;
-      console.log(criteria);
+
       dispatch({ type: "GET_CRITERIA", payload: criteria });
+    } catch (err) {
+      console.error(err);
+    }
+  };
+};
+export const getProject = projectID => {
+  return async dispatch => {
+    try {
+      const res = await instance.get(`/project/${projectID}/`);
+      const project = res.data;
+
+      dispatch({ type: "GET_PROJECT", payload: project });
     } catch (err) {
       console.error(err);
     }

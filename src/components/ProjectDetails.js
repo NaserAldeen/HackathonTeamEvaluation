@@ -2,10 +2,87 @@ import React, { Component } from "react";
 import Evaluation from "./Evaluation";
 import ShareModal from "./ShareModal";
 import EnterName from "./EnterName";
-export default class ProjectDetails extends Component {
+import { connect } from "react-redux";
+import { getProject } from "../redux/actions";
+import { Tabs, Tab } from "react-bootstrap";
+class ProjectDetails extends Component {
+  state = {
+    currentProject: {},
+    locked: "0"
+  };
+  componentDidMount = () => {
+    this.props.getProject(this.props.match.params.projectID);
+  };
   render() {
+    const project = this.props.currentProject;
+    console.log(this.props.currentProject);
+    let tabs;
+    if (this.props.currentProject.teams)
+      tabs = this.props.currentProject.teams.map(team => (
+        <Tab
+          eventKey={team.name.replace(/\s/g, "")}
+          title={team.name}
+          className="text-left ml-4 mt-3"
+        >
+          <table class="table">
+            <thead>
+              <tr>
+                <th scope="col">Criteria</th>
+                <th scope="col">Avg. Score</th>
+                <th scope="col">Weight</th>
+                <th scope="col">Weighted Avg.</th>
+              </tr>
+            </thead>
+            <tbody>
+              {this.props.currentProject.project_criteria_list.map(cri => (
+                <tr>
+                  <th scope="row">{cri.name}</th>
+                  <td>{Math.floor(Math.random() * 15) + 85}%</td>
+                  <td>{cri.weight}</td>
+                  <td>
+                    {Math.floor(
+                      (Math.floor(Math.random() * 15) + 85) * cri.weight * 0.01
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          {team.name.endsWith("B") ? (
+            <>
+              <h4>Notes:</h4>
+              <p>
+                - <b>Naser said:</b> jfiojlkd
+              </p>
+              <p>
+                - <b>Khara said:</b> uioprfklmc
+              </p>
+
+              <p>
+                - <b>nigg said:</b> kmf;l
+              </p>
+              <p>
+                - <b>kfsdlksd said:</b> helloo
+              </p>
+              <p>
+                - <b>naser said: </b>fsdlkfsd
+              </p>
+              <p>
+                - <b>ahmad said:</b> opirt
+              </p>
+            </>
+          ) : (
+            <>
+              <h4>Notes:</h4>
+              <p>
+                - <b>Naser said: </b>good
+              </p>
+            </>
+          )}
+        </Tab>
+      ));
     if (this.props.match.params.projectID.endsWith("e")) {
-      return <EnterName />;
+      return <EnterName project={project} />;
     } else
       return (
         <div className="jumbotron jumbotron-fluid mx-auto w-75 mt-5">
@@ -19,56 +96,23 @@ export default class ProjectDetails extends Component {
           >
             Share
           </button>
+          <button
+            type="button"
+            class="btn btn-danger btn-sm"
+            onClick={() => {
+              localStorage.getItem("locked") == "0"
+                ? localStorage.setItem("locked", "1")
+                : localStorage.setItem("locked", "0");
+
+              this.setState({ locked: Math.random() * 10 });
+            }}
+          >
+            {localStorage.getItem("locked") === "0" ? "Lock" : "Unlock"}
+          </button>
           <ShareModal />
-          <ul class="nav nav-tabs ml-5" id="myTab" role="tablist">
-            <li class="nav-item">
-              <a
-                class="nav-link active"
-                id="home-tab"
-                data-toggle="tab"
-                href="#home"
-                role="tab"
-                aria-controls="home"
-                aria-selected="true"
-              >
-                All
-              </a>
-            </li>
-            <li class="nav-item">
-              <a
-                class="nav-link"
-                id="profile-tab"
-                data-toggle="tab"
-                href="#profile"
-                role="tab"
-                aria-controls="profile"
-                aria-selected="false"
-              >
-                Team A
-              </a>
-            </li>
-            <li class="nav-item">
-              <a
-                class="nav-link"
-                id="contact-tab"
-                data-toggle="tab"
-                href="#contact"
-                role="tab"
-                aria-controls="contact"
-                aria-selected="false"
-              >
-                Team B
-              </a>
-            </li>
-          </ul>
-          <div class="tab-content" id="myTabContent">
-            <div
-              class="tab-pane fade show active"
-              id="home"
-              role="tabpanel"
-              aria-labelledby="home-tab"
-            >
-              <table class="table w-75 mx-auto mt-3">
+          <Tabs id="uncontrolled-tab-example" className="ml-4">
+            <Tab eventKey="All" title="All" className="text-left ml-4 mt-3">
+              <table class="table">
                 <thead>
                   <tr>
                     <th scope="col">Criteria</th>
@@ -78,124 +122,38 @@ export default class ProjectDetails extends Component {
                   </tr>
                 </thead>
                 <tbody>
-                  <tr>
-                    <th scope="row">Presentation</th>
-                    <td>95%</td>
-                    <td>20</td>
-                    <td>19</td>
-                  </tr>
-                  <tr>
-                    <th scope="row">Functionality</th>
-                    <td>90%</td>
-                    <td>30</td>
-                    <td>27</td>
-                  </tr>
-                  <tr>
-                    <th scope="row">Demo</th>
-                    <td>86%</td>
-                    <td>30</td>
-                    <td>28.5</td>
-                  </tr>
-                  <tr>
-                    <th scope="row">Code Quality</th>
-                    <td>80%</td>
-                    <td>20</td>
-                    <td>16</td>
-                  </tr>
+                  {this.props.currentProject.project_criteria_list &&
+                    this.props.currentProject.project_criteria_list.map(cri => (
+                      <tr>
+                        <th scope="row">{cri.name}</th>
+                        <td>{Math.floor(Math.random() * 15) + 85}%</td>
+                        <td>{cri.weight}</td>
+                        <td>
+                          {Math.floor(
+                            (Math.floor(Math.random() * 15) + 85) *
+                              cri.weight *
+                              0.01
+                          )}
+                        </td>
+                      </tr>
+                    ))}
                 </tbody>
               </table>
-              <p className="float-right w-75 mx-auto">Total: 87.4%</p>
-            </div>
-            <div
-              class="tab-pane fade"
-              id="profile"
-              role="tabpanel"
-              aria-labelledby="profile-tab"
-            >
-              <table class="table w-75 mx-auto mt-3">
-                <thead>
-                  <tr>
-                    <th scope="col">Criteria</th>
-                    <th scope="col">Avg. Score</th>
-                    <th scope="col">Weight</th>
-                    <th scope="col">Weighted Avg.</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <th scope="row">Presentation</th>
-                    <td>95%</td>
-                    <td>20</td>
-                    <td>19</td>
-                  </tr>
-                  <tr>
-                    <th scope="row">Functionality</th>
-                    <td>90%</td>
-                    <td>30</td>
-                    <td>27</td>
-                  </tr>
-                  <tr>
-                    <th scope="row">Demo</th>
-                    <td>86%</td>
-                    <td>30</td>
-                    <td>28.5</td>
-                  </tr>
-                  <tr>
-                    <th scope="row">Code Quality</th>
-                    <td>80%</td>
-                    <td>20</td>
-                    <td>16</td>
-                  </tr>
-                </tbody>
-              </table>
-              <p className="float-right w-75 mx-auto">Total: 87.4%</p>
-            </div>
-            <div
-              class="tab-pane fade"
-              id="contact"
-              role="tabpanel"
-              aria-labelledby="contact-tab"
-            >
-              <table class="table w-75 mx-auto mt-3">
-                <thead>
-                  <tr>
-                    <th scope="col">Criteria</th>
-                    <th scope="col">Avg. Score</th>
-                    <th scope="col">Weight</th>
-                    <th scope="col">Weighted Avg.</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <th scope="row">Presentation</th>
-                    <td>95%</td>
-                    <td>20</td>
-                    <td>19</td>
-                  </tr>
-                  <tr>
-                    <th scope="row">Functionality</th>
-                    <td>90%</td>
-                    <td>30</td>
-                    <td>27</td>
-                  </tr>
-                  <tr>
-                    <th scope="row">Demo</th>
-                    <td>86%</td>
-                    <td>30</td>
-                    <td>28.5</td>
-                  </tr>
-                  <tr>
-                    <th scope="row">Code Quality</th>
-                    <td>80%</td>
-                    <td>20</td>
-                    <td>16</td>
-                  </tr>
-                </tbody>
-              </table>
-              <p className="float-right w-75 mx-auto">Total: 87.4%</p>
-            </div>
-          </div>
+            </Tab>
+            {tabs}
+          </Tabs>
         </div>
       );
   }
 }
+const mapStateToProps = state => {
+  return {
+    currentProject: state.semesters.currentProject
+  };
+};
+const mapDispatchToProps = dispatch => {
+  return {
+    getProject: projectID => dispatch(getProject(projectID))
+  };
+};
+export default connect(mapStateToProps, mapDispatchToProps)(ProjectDetails);

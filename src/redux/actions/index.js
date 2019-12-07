@@ -5,5 +5,6 @@ export {
   addProject,
   getCriteria,
   addCriterion,
-  addTeam
+  addTeam,
+  getProject
 } from "./unnamed";
